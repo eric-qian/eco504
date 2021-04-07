@@ -1,0 +1,16 @@
+function wSim = simAR1(rho, wBar, vareps, nSim)
+
+varw = vareps/(1-rho^2);  % Unconditional variance of w_t
+muw  = wBar/(1-rho);  % Unconditional mean
+
+
+wSim = nan(nSim,1);
+wSim(1) = muw;
+
+
+
+for j=2:nSim
+    wS
+end
+
+end

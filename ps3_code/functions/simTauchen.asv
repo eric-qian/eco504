@@ -1,0 +1,15 @@
+function simTauchen(ResTauchen, nSim)
+
+wIdx    = nan(nSim, 1);               % Simulations: in state units
+wIdx(1) = ceil((ResTauchen.in.N)/2);  % Start at middle of grid
+
+Pi = ResTauchen.Pi;
+
+
+for j=2:nSim
+    wIdx(j) = Pi(3, :)
+    
+end
+
+
+end
