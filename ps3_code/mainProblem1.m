@@ -1,3 +1,4 @@
+% mainProblem1.m  Main file for problem 1.
 %% Preliminaries
 clear
 clc
