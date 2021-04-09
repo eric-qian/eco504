@@ -96,10 +96,15 @@ if strcmp(method, 'EGM')
         
     end
     
-    %% Policy function, linear interpolation
+    %% Value function iteration
 else
     
     aNew = aaGrid;
+    VNew = ones(size(aNew));  % Value function
+    
+    yyyGrid = repmat(yyGrid, 1,1, Na);
+    aaaGrid = repmat(aaGrid, 1,1,Na);
+    aapGrid = permute(aaaGrid, [3 2 1]);
     
     while converged == 0
         if mod(iter,1) == 0
@@ -108,6 +113,15 @@ else
         end
         
         aOld = aNew;
+        VOld = VNew;
+        
+        % Continuation value. 
+        Cont = beta * Pi * VOld';
+        Cont = repmat(Cont, 1, 1, Na);
+        Cont = permute(Cont, [3,1,2]);
+        [V, ja] = max(crra(yyyGrid - (1+r)*aaaGrid - aapGrid, gamma) + Cont, 3, 'linear');
+        
+
         
         EulerBind = crra((1+r)*aaGrid -aGrid(1) + yyGrid, gamma) - ...
             (beta*(1+r) * Pi * ((1+r)*aGrid(1) + yyGrid' - repmat(aNew(1,:)', 1, Na)))';

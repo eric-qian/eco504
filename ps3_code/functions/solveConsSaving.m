@@ -96,10 +96,16 @@ if strcmp(method, 'EGM')
         
     end
     
-    %% Policy function, linear interpolation
+    %% Value function iteration
 else
     
-    aNew = aaGrid;
+    aNew    = aaGrid;
+    aOld    = nan(size(aNew));
+    VNew    = ones(size(aNew));  % Value function
+    cNew    = NaN;
+    yyyGrid = repmat(yyGrid, 1,1, Na);
+    aaaGrid = repmat(aaGrid, 1,1,Na);
+    aapGrid = permute(aaaGrid, [3 2 1]);
     
     while converged == 0
         if mod(iter,1) == 0
@@ -108,33 +114,22 @@ else
         end
         
         aOld = aNew;
+        VOld = VNew;
         
-        EulerBind = crra((1+r)*aaGrid -aGrid(1) + yyGrid, gamma) - ...
-            (beta*(1+r) * Pi * ((1+r)*aGrid(1) + yyGrid' - repmat(aNew(1,:)', 1, Na)))';
-        
-        aNew(EulerBind > 0) = aGrid(1);
-        idxInterior = find(EulerBind <=0 );
-        
-        for j = idxInterior(:)'
-            [row, col] = ind2sub([Na, Nw], j);
-            
-            
-            obj = @(aStar) ...
-                (crra((1+r)*aaGrid(j) + yyGrid(j) - aStar, gamma) - ...
-                beta*(1+r) * Pi(col, :) * crra((1+r)*aStar + yGrid(:) - aInterp(aGrid, aNew, aStar), gamma))^2;
-            options = optimoptions('fmincon', 'Display', 'off');
-            aNew(j) = fmincon(obj, 1, [], [], [], [], [], [], [], options);
-            
-        end
+        % Continuation value. 
+        Cont = beta * Pi * VOld';
+        Cont = repmat(Cont, 1, 1, Na);
+        Cont = permute(Cont, [3,1,2]);
+        [VNew, j] = max(crra(yyyGrid - (1+r)*aaaGrid - aapGrid, gamma) + Cont, [], 3, 'linear');
+        aNew = aaaGrid(j);
+
         
         
-        if max(abs(aNew(:)-aOld(:))) < epsConv
+        if max(abs(VNew(:)-VOld(:))) < epsConv
             converged = 1;
         end
         
         iter = iter +1;
-        aOld
-        aNew
         
         
         
