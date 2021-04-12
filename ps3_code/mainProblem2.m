@@ -78,18 +78,37 @@ Spec(j).phi    = 'NBL';
 %% Estimate models
 
 % Compare solution methods
-compare = 0;
+compare = 1;
 
 if compare == 1
     j=1;
     
-    Spec_j = Spec(j);
-    ResEG  = solveConsSaving(Spec_j);
-    ResVFI = solveConsSaving(Spec_j, 'VFI');
-    pctDiff = (ResVFI.aPol - ResEG.aPol) ./ ResEG.aPol;
+    Spec_j    = Spec(j);
+    Spec_j.Na = 100;  % Make the grid smaller so that the problem is tractable
+    SpecEG    = Spec_j;
+    SpecVFI   = Spec_j;
+    
+    SpecEG.Res   = solveConsSaving(Spec_j);
+    SpecVFI.Res  = solveConsSaving(Spec_j, 'VFI');
+    pctDiff   = (SpecVFI.Res.aPol - SpecEG.Res.aPol) ./ SpecEG.Res.aPol;
     nanmean(pctDiff(:)*100)
     nanmedian(pctDiff(:)*100)
     min(pctDiff(:)*100)
+    
+    rng(1)
+    ResEG.Sim  = simConsSaving(SpecEG, nSim, nDiscard);
+    rng(1)
+    ResVFI.Sim = simConsSaving(SpecVFI, nSim, nDiscard);
+    
+    plot(ResEG.Sim.cPath)
+    hold on
+    plot(ResVFI.Sim.cPath)
+    formatFig(figSize)
+    xlim([0, 10000])
+    box on;grid on;
+    legend({'EG', 'VFI'}, 'Orientation', 'horizontal', 'Location', 'southoutside')
+    saveas(gcf, [figPath 'VFI_EG_compare.png'])
+    
 end
 
 
@@ -129,6 +148,7 @@ xlim([0, 250])
 
 
 %% Part b
+
 plotIdx  = [2, 1, 3];
 
 cPlot    = []; 
@@ -145,7 +165,7 @@ plotLabs = {['\gamma=1 (\sigma=' num2str(sigmaVec(1), 3) ')'], ...
             ['\gamma=3 (\sigma=' num2str(sigmaVec(2), 3) ')'],...
             ['\gamma=5 (\sigma='  num2str(sigmaVec(3), 3) ')']};
 
-
+close all
 plot(cPlot())
 xlim([0, nSim-nDiscard])
 legend(plotLabs, 'Location', 'southoutside', 'Orientation', 'horizontal')
@@ -165,6 +185,7 @@ for j =plotIdx
     
 end
 
+close all
 sPlot = ones(size(cPlot))- cPlot./yPlot;
 plot(sPlot)
 xlim([0, nSim-nDiscard])
@@ -187,6 +208,7 @@ muVec = mean(cPlot, 'omitnan');
 plotLabs = {['Baseline (\mu=' num2str(muVec(1), 3) ')'], ...
     ['NBL (\mu=' num2str(muVec(2),3) ')' ]};
 
+close all
 plot(cPlot)
 xlim([0, nSim-nDiscard])
 legend(plotLabs, 'Location', 'southoutside', 'Orientation', 'horizontal')
