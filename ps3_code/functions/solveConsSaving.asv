@@ -96,8 +96,8 @@ if strcmp(method, 'EGM')
         
         aNew = yyGrid -  cNew + (1+r)*aaGrid;
         
-        err = max(abs(aNew(:)-aOld(:))./aOld(:)*100);
-        if err < epsConv
+        
+        if max(abs(aNew(:)-aOld(:))) < epsConv
             converged = 1;
         end
         
@@ -153,7 +153,7 @@ else
 
         
         
-        if max(    abs((VNew(:)-VOld(:))./VOld(:)*1000)) < epsConv
+        if max(    abs((VNew(:)-VOld(:))./VOld(:)*100)) < epsConv
             converged = 1;
         end
         

@@ -7,11 +7,11 @@ nSim = nSim+1;  % Add padding at the end
 aPath       = nan(nSim, 1);
 cPath       = nan(nSim, 1);
 yPathIdx    = nan(nSim, 1);
-yPathIdx(1) = 1;
+yPathIdx(1) = 3;
 
 % Store policy functions
 aPol = Spec_j.Res.aPol;
-
+cPol = Spec_j.Res.cPol;
 
 % Store grids
 yGrid = Spec_j.Res.yGrid;
@@ -20,8 +20,10 @@ aGrid  = Spec_j.Res.aGrid;
 
 % Initialize
 aPath(1) = 0;
+%aPath(1) = aGrid(round(length(aGrid)/2));
 aPath(2) = interp1(aGrid, aPol(:, yPathIdx(1)), aPath(1), 'linear', 'extrap');
-cPath(1) = yGrid(yPathIdx(1)) - aPath(2) + (1+r)*aPath(1);
+cPath(1) = interp1(aGrid, cPol(:, yPathIdx(1)), aPath(1), 'linear', 'extrap');
+
 
 
 % Stochastic matrix
@@ -35,7 +37,9 @@ for j=2:nSim-1
 
     % Compute policy. Interpolate.
     aPath(j+1)  = interp1(aGrid, aPol(:, yPathIdx(j)), aPath(j), 'linear', 'extrap');
-    cPath(j)    = yGrid(yPathIdx(j)) - aPath(j+1) + (1+r)*aPath(j);  
+    cPath(j)    = interp1(aGrid, cPol(:, yPathIdx(j)), aPath(j), 'linear', 'extrap');  
+
+    
 %     plot(cPath)
 %     title(j)
 %     pause
@@ -45,22 +49,23 @@ end
 yPath = [yGrid(yPathIdx(1:end-1)) NaN];
 
 % Discard draws
+if nDiscard > 0
 yPath    = yPath(nDiscard:end-1);
 aPath    = aPath(nDiscard:end-1);
 cPath    = cPath(nDiscard:end-1);
 yPathIdx = yPathIdx(nDiscard:end-1);
-
+end
 
 
 % Store objects
-ResSim       = struct;
-ResSim.Spec  = Spec_j;
-ResSim.nSim  = nSim-1;
+ResSim          = struct;
+ResSim.Spec     = Spec_j;
+ResSim.nSim     = nSim-1;
 ResSim.nDiscard = nDiscard;
-ResSim.yPath = yPath;
-ResSim.aPath = aPath;
-ResSim.cPath = cPath;
-ResSim.yPathIdx  = yPathIdx;
+ResSim.yPath    = yPath;
+ResSim.aPath    = aPath;
+ResSim.cPath    = cPath;
+ResSim.yPathIdx = yPathIdx;
 
 
 end
