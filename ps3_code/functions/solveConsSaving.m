@@ -23,8 +23,7 @@ Na     = Spec.Na;
 
 %% Make income grid
 wBar       = -vareps/(2*(1+rho));
-varw       = vareps/(1-rho^2);  % Unconditional variance of w_t
-muw        = wBar/(1-rho);  % Unconditional mean
+
 
 % Make grid using the Tauchen method
 ResGrid = tauchen(rho, wBar, vareps, Nw, m);
@@ -43,12 +42,11 @@ else
     lower = phi;    % Exogenous borrowing limit
 end
 
-% Asset grid
+% Asset grid, uneven spacing
 aGrid = (exp(linspace(log(1), log(2), Na))-1)*(upper-lower)+lower;
-%aGrid = linspace(lower,upper, Na); 
 
 
-aaGrid = repmat(aGrid(:), 1, Nw);  % Asset grid in matrix
+aaGrid = repmat(aGrid(:), 1, Nw);  % Asset grid in matrix form
 yyGrid = repmat(yGrid(:)', Na, 1);  % Income grid in matrix form
 
 
@@ -61,7 +59,7 @@ if strcmp(method, 'EGM')
     
     cNew = aaGrid*r + yyGrid;  % Consumption policy function
     aNew = nan(size(cNew));    % Savings policy function
-    err = NaN;
+    err  = NaN;
     
     while converged == 0
         
@@ -146,11 +144,7 @@ else
         [VNew, j] = max(VVNew, [], 3, 'linear');
         aNew      = aapGrid(j);
 
-        for jh = 1:Nh
-            VNew = crra(yyGrid + (1+r)*aaGrid - aNew, gamma) + beta * VNew*Pi';
-        end
-        
-        
+                
         err = max(abs((VNew(:)-VOld(:))./VOld(:))*100);
         if err < epsConv
             converged = 1;

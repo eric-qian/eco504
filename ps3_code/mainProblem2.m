@@ -8,7 +8,11 @@ addpath('functions/')
 % Structure giving specifications
 Spec = struct;
 
-figPath = 'figures/';
+Nw =5;  % # Grid points for income shock
+
+% Make figures
+figPath = ['figures_Nw=' num2str(Nw) '/'];
+mkdir(figPath)
 figSize = [6,3];
 
 % Simulation settings
@@ -34,8 +38,7 @@ Spec(j).method = 'EGM';
 Spec(j).vareps  = 0.06;                 % Variance of epsilon of w process
 Spec(j).m       = 3;                    % grid is 0 +/- m*sigma^2_w
 Spec(j).rho     = 0.9;                  % AR coefficient of w process
-%Spec(j).Nw      = 5;                    % Grid size
-Spec(j).Nw      = 21;                    % Grid size
+Spec(j).Nw      = Nw;                    % Grid size
 
 %% Alternative specifications
 
@@ -146,7 +149,7 @@ saveas(gcf, [figPath 'p2_partc.png'])
 
 
 
-%% Part d
+%% Parts d and e
 plotIdx  = [1, 6];
 
 cPlot    = []; 
@@ -159,9 +162,23 @@ for j =plotIdx
     yPlot = [yPlot Spec(j).Sim.yPath'];
 end
 
+
+% Compute insurance coefficient
+dl_c    = log(cPlot(2:end, :)) -     log(cPlot(1:end-1, :));
+eps     = log(yPlot(2:end, 1)) - 0.9*log(yPlot(1:end-1, 1));  % Same shocks for both
+vcov0   = cov(dl_c(:, 1), eps, 'omitrows');
+vcovNBL = cov(dl_c(:, 2), eps, 'omitrows');
+psi0    = 1-vcov0(2,1)/vcov0(2,2);
+psiNBL    = 1-vcovNBL(2,1)/vcovNBL(2,2);
+
+
+% Get mean
 muVec = mean(cPlot);
-plotLabs = {['\phi=0 (\mu=' num2str(muVec(1), 3) ')'], ...
-    ['\phi=NBL (\mu=' num2str(muVec(2),3) ')' ]};
+
+
+% Make plot
+plotLabs = {['\phi=0 (\mu=' num2str(muVec(1), 3) ', \psi=' num2str(psi0, 3)  ')'], ...
+    ['\phi=NBL (\mu=' num2str(muVec(2),3) ', \psi=' num2str(psiNBL, 3) ')' ]};
 
 close all
 plot(cPlot)
@@ -171,18 +188,12 @@ formatFig(figSize)
 saveas(gcf, [figPath 'p2_partd.png'])
 
 
-%% Part e
 
-
-dl_c    = log(cPlot(2:end, :)) -     log(cPlot(1:end-1, :));
-eps     = log(yPlot(2:end, 1)) - 0.9*log(yPlot(1:end-1, 1));  % Same shocks for both
-vcov0   = cov(dl_c(:, 1), eps, 'omitrows');
-vcovNBL = cov(dl_c(:, 2), eps, 'omitrows');
 
 
 %% Appendix: Compare solution methods
 
-compare = 0;
+compare = 1;
 
 if compare == 1
     j=1;
