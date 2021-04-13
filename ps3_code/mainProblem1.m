@@ -18,7 +18,8 @@ muw     = wBar/(1-rho);  % Unconditional mean
 nSim    = 11000;
 nBurn   = 1000; 
 figSize = [6,4];
-figPath = 'figures/';
+figPath = 'figures_p1/';
+mkdir(figPath)
 
 %% Run Tauchen
 ResTauchen5    = tauchen(rho, wBar, vareps, 5, m);  % Tauchen, 5 states
@@ -46,21 +47,24 @@ mean(ySim1000)
 
 %% make plots
 close all
-
+clc
 % Make plot for process w
 figure
 subplot(3,1,1)
 plot(wSim5(nBurn:end));
 title(['5 states (\mu_w=' num2str(mean(wSim5), 3) ', \sigma_w^2=' num2str(var(wSim5), 3), ')'])
+xlim([1, nSim-nBurn])
 
 subplot(3,1,2)
 plot(wSim10(nBurn:end));
 title(['10 states (\mu_w=' num2str(mean(wSim10), 3) ', \sigma_w^2=' num2str(var(wSim10), 3), ')'])
+xlim([1, nSim-nBurn])
 
 subplot(3,1,3)
 plot(wSim1000(nBurn:end));
 title(['1000 states (\mu_w=' num2str(mean(wSim1000), 3) ', \sigma_w^2=' num2str(var(wSim1000), 3), ')'])
 sgtitle(['Analytical unconditional moments (w): \mu_w=' num2str(muw, 3), ', \sigma^2_w=' num2str(varw, 3)])
+xlim([1, nSim-nBurn])
 formatFig(figSize)
 saveas(gcf, [figPath, 'p1_wTS.png'])
 
@@ -70,14 +74,15 @@ figure
 subplot(3,1,1)
 plot(ySim5(nBurn:end));
 title(['5 states (\mu_y=' num2str(mean(ySim5), 3) ')'])
-
+xlim([1, nSim-nBurn])
 subplot(3,1,2)
 plot(ySim10(nBurn:end));
 title(['10 states (\mu_y=' num2str(mean(ySim10), 3) ')'])
-
+xlim([1, nSim-nBurn])
 subplot(3,1,3)
 plot(ySim1000(nBurn:end));
 title(['1000 states (\mu_y=' num2str(mean(ySim1000), 3) ')'])
+xlim([1, nSim-nBurn])
 formatFig(figSize)
 saveas(gcf, [figPath, 'p1_yTS.png'])
 
