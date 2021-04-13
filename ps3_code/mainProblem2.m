@@ -8,7 +8,7 @@ addpath('functions/')
 % Structure giving specifications
 Spec = struct;
 
-Nw =5;  % # Grid points for income shock
+Nw =101;  % # Grid points for income shock
 
 % Make figures
 figPath = ['figures_Nw=' num2str(Nw) '/'];
