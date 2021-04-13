@@ -26,27 +26,30 @@ wBar       = -vareps/(2*(1+rho));
 varw       = vareps/(1-rho^2);  % Unconditional variance of w_t
 muw        = wBar/(1-rho);  % Unconditional mean
 
+% Make grid using the Tauchen method
 ResGrid = tauchen(rho, wBar, vareps, Nw, m);
 
+% Stochastic transition matrix
 Pi    = ResGrid.Pi;
-yGrid = exp(ResGrid.wGrid);
+yGrid = exp(ResGrid.wGrid);  % Transform to income units
 
+
+% Upper bound of income process
 upper = yGrid(end)/r;
 
-if phi    == 'NBL'
+if phi    == 'NBL'  % Natural borrowing limit
     lower = -yGrid(1)/r;
-
-
 else
-    lower = phi;     
+    lower = phi;    % Exogenous borrowing limit
 end
-aGrid = (exp(linspace(log(1), log(2), Na))-1)*(upper-lower)+lower;
-  
 
+% Asset grid
+aGrid = (exp(linspace(log(1), log(2), Na))-1)*(upper-lower)+lower;
+%aGrid = linspace(lower,upper, Na); 
 
 
 aaGrid = repmat(aGrid(:), 1, Nw);  % Asset grid in matrix
-yyGrid = repmat(yGrid(:)', Na, 1);
+yyGrid = repmat(yGrid(:)', Na, 1);  % Income grid in matrix form
 
 
 
@@ -56,41 +59,43 @@ if strcmp(method, 'EGM')
     converged = 0;
     iter      = 1;
     
-    cNew = aaGrid*r + repmat(yGrid(:)', Na, 1);
-    aNew = nan(size(cNew));
-    
+    cNew = aaGrid*r + yyGrid;  % Consumption policy function
+    aNew = nan(size(cNew));    % Savings policy function
+    err = NaN;
     
     while converged == 0
         
         % Print to console
         if mod(iter, 25) == 0
             clc
-            disp(['Iteration ' num2str(iter), ', Delta = ' num2str(max(abs(cNew(:)-cOld(:)))) '...'])
+            disp(['Iteration ' num2str(iter), ', err = ' num2str(err) '...'])
         end
+        
         
         % Consumption policy function. Na x Ny
         cOld = cNew;
         aOld = aNew;
         
 
+        B      = beta*(1+r) * dcrra(cOld, gamma)* Pi';  % RHS of EE
+        cTilde = invdcrra(B, gamma);                    % Solve for consumption                
 
-        B      = beta*(1+r) * crra(cOld, gamma)* Pi';  % RHS of EE
 
-        cTilde = invCRRA(B, gamma);                    % Solve for consumption
+        aStar  = (cTilde + aaGrid - yyGrid)/(1+r);     % Current asset holdings leading consumer to hold aaGrid tomorrow
+                        
+        cNew = nan(size(cOld));  % Consumption policy rule
         
-        aStar = (cTilde + aaGrid - yyGrid)/(1+r);  % Current asset holdings
-        
-        
-        cNew = nan(size(cOld));
         % Interpolate points
-        for jy = 1:Nw
+        for jy = 1:Nw  % Loop through shocks
             aStar_j     = aStar(:, jy);
-            cNew(:, jy) = interp1(aStar_j, cTilde(:, jy), aGrid, 'linear', 'extrap');
+            cTilde_j    = cTilde(:, jy);
+            cInterp     = griddedInterpolant(aStar_j, cTilde_j, 'linear', 'linear');            
+            cNew(:, jy) = cInterp(aGrid);
             
             
-            % If borrowing constraint binds
-            jBind          = aGrid < aStar_j(1);
-            cNew(jBind,jy) = (1+r)*aGrid(jBind) + yGrid(jy) - aGrid(1);
+            % If borrowing constraint binds a < min(aStar_j)
+             jBind          = aGrid < aStar_j(1);
+             cNew(jBind,jy) = (1+r)*aGrid(jBind) + yGrid(jy) - aGrid(1);
             
         end
         
@@ -102,23 +107,12 @@ if strcmp(method, 'EGM')
         end
         
         iter = iter +1;
-        
-%         close all
-%         figure
-%         plot(cNew(:, 3))
-%         hold on
-%         plot(cOld(:, 3))
-%         title(iter)
-%         ylim([0,8])
-%         box on 
-%         grid on
-%         legend({'new', 'old'})
-%         pause
     end
+
     
     %% Value function iteration
 else
-    
+    Nh      = 0;
     aNew    = aaGrid;
     aOld    = nan(size(aNew));
     VNew    = zeros(size(aNew));  % Value function
@@ -130,11 +124,12 @@ else
     
     converged = 0;
     iter      = 1;
+    err       = nan;
     
     while converged == 0
         if mod(iter, 25) == 0
             clc
-            disp(['Iteration ' num2str(iter), ', Delta = ' num2str(max(abs(VNew(:)-VOld(:)))) '...'])
+            disp(['Iteration ' num2str(iter), ', err = ' num2str(err) '...'])
         end
         
         aOld = aNew;
@@ -142,40 +137,28 @@ else
         VOld = VNew;
         
         % Continuation value. 
-        
-        
         Cont      = beta * Pi * VOld';
         Cont      = repmat(Cont, 1, 1, Na);
         Cont      = permute(Cont, [3,1,2]);
+        
+        
         VVNew     = crra(yyyGrid + (1+r)*aaaGrid - aapGrid, gamma) + Cont;
         [VNew, j] = max(VVNew, [], 3, 'linear');
         aNew      = aapGrid(j);
 
+        for jh = 1:Nh
+            VNew = crra(yyGrid + (1+r)*aaGrid - aNew, gamma) + beta * VNew*Pi';
+        end
         
         
-        if max(    abs((VNew(:)-VOld(:))./VOld(:)*1000)) < epsConv
+        err = max(abs((VNew(:)-VOld(:))./VOld(:))*100);
+        if err < epsConv
             converged = 1;
         end
         
         iter = iter +1;
-        
-        
-        cNew = yyGrid -  aNew + (1+r)*aaGrid;
-   %     close all
-            
-%         if iter >= 3
-%             figure
-%             plot(cNew(:, 3))
-%             hold on
-%             plot(cOld(:, 3))
-%             title(iter)
-%             ylim([0,8])
-%             box on
-%             grid on
-%             legend({'new', 'old'})
-%             pause
-%         end
-        
+                
+        cNew = yyGrid -  aNew + (1+r)*aaGrid;        
         
     end
 

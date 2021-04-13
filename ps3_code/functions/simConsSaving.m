@@ -1,6 +1,6 @@
 function ResSim = simConsSaving(Spec_j, nSim, nDiscard)
 
-r = Spec_j.r;
+r    = Spec_j.r;
 nSim = nSim+1;  % Add padding at the end
 
 % Paths

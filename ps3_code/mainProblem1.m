@@ -15,8 +15,8 @@ muw     = wBar/(1-rho);  % Unconditional mean
 
 
 % Simulation/plot parameters
-nSim    = 10000;
-nBurn   = nSim/10; 
+nSim    = 11000;
+nBurn   = 1000; 
 figSize = [6,4];
 figPath = 'figures/';
 
