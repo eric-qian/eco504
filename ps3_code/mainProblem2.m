@@ -10,7 +10,7 @@ Spec = struct;
 
 
 %Nw = 5;  % # Grid points for income shock
-Nw = 121;  % # Grid points for income shock, big grid
+Nw = 101;  % # Grid points for income shock, big grid
 
 % Make figures
 figPath = ['figures_Nw=' num2str(Nw) '/'];
