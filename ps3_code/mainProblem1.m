@@ -8,7 +8,7 @@ addpath('functions/')
 % Tauchen Parameters
 rho     = 0.9;
 vareps  = 0.06;
-m       = 4;  % grid is 0 +/- sigma^2_w
+m       = 3;  % grid is 0 +/- sigma^2_w
 wBar    = -vareps/(2*(1+rho));
 varw    = vareps/(1-rho^2);  % Unconditional variance of w_t
 muw     = wBar/(1-rho);  % Unconditional mean

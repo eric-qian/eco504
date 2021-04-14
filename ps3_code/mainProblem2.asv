@@ -8,9 +8,7 @@ addpath('functions/')
 % Structure giving specifications
 Spec = struct;
 
-
-%Nw = 5;  % # Grid points for income shock
-Nw = 121;  % # Grid points for income shock, big grid
+Nw =5;  % # Grid points for income shock
 
 % Make figures
 figPath = ['figures_Nw=' num2str(Nw) '/'];
@@ -77,6 +75,13 @@ Spec(j).lab    = '\phi=-y_{min}/r';
 Spec(j).phi    = 'NBL';
 
 
+% Imposing a positive borrowing limit
+j              = 6;
+Spec(j)        = Spec(1);
+Spec(j).lab    = '\phi=-y_{min}/r';
+Spec(j).phi    = ';
+
+
 %% Estimate models
 
 for j = 1:length(Spec)
@@ -136,7 +141,7 @@ for j =plotIdx
 end
 
 close all
-sPlot = (yPlot + (1+Spec(1).r)*aPlot - cPlot) ./((1+Spec(1).r)*aPlot+ yPlot);
+sPlot = (yPlot + (1+Spec(1).r)*aPlot - cPlot) ./yPlot;
 mu_s = mean(sPlot);
 
 
@@ -148,6 +153,7 @@ xlim([0, nSim-nDiscard])
 legend(plotLabs, 'Location', 'southoutside', 'Orientation', 'horizontal')
 formatFig(figSize)
 saveas(gcf, [figPath 'p2_partc.png'])
+
 
 
 %% Parts d and e
@@ -187,6 +193,9 @@ xlim([0, nSim-nDiscard])
 legend(plotLabs, 'Location', 'southoutside', 'Orientation', 'horizontal')
 formatFig(figSize)
 saveas(gcf, [figPath 'p2_partd.png'])
+
+
+
 
 
 %% Appendix: Compare solution methods

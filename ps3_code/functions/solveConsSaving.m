@@ -168,5 +168,6 @@ Res.yGrid = yGrid;
 Res.aGrid = aGrid;
 Res.cPol  = cNew;
 Res.aPol  = aNew;
-
+Res.iter  = iter;
+end
 
