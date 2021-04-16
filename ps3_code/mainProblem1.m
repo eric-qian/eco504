@@ -46,7 +46,8 @@ mean(ySim1000)
 
 
 %% make plots
-close all
+
+close all`
 clc
 % Make plot for process w
 figure

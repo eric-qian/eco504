@@ -9,8 +9,8 @@ addpath('functions/')
 Spec = struct;
 
 
-%Nw = 5;  % # Grid points for income shock
-Nw = 101;  % # Grid points for income shock, big grid
+Nw = 5;  % # Grid points for income shock
+%Nw = 101;  % # Grid points for income shock, big grid
 
 % Make figures
 figPath = ['figures_Nw=' num2str(Nw) '/'];
@@ -94,6 +94,21 @@ for jSpec = 1:length(Spec)
     Spec(jSpec).Sim = simConsSaving(Spec_j, nSim, nDiscard);
 end
 
+
+%% Part a: Plot policy function
+
+figure
+
+surf(repmat(Spec(1).Res.aGrid', 1, Spec(1).Nw),...
+    repmat(Spec(1).Res.yGrid, Spec(1).Na, 1), Spec(1).Res.aPol)
+shading interp
+xlabel('a')
+ylabel('y')
+zlabel('a''')
+box on
+grid on
+resizeFig(figSize)
+saveas(gcf, [figPath 'p2_parta.png'])
 
 %% Part b
 
